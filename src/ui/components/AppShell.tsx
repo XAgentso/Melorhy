@@ -3,7 +3,7 @@ import { useLibrary } from '../../web/state/LibraryContext'
 import { usePlayer } from '../../web/state/PlayerContext'
 import { usePlaylists } from '../../web/state/PlaylistContext'
 import type { TrackId } from '../../web/state/types'
-import { getSupabaseClient, fetchRemoteTracks, subscribeTracks } from '../../web/backend/supabase'
+import { getSupabaseClient, fetchRemoteTracks, subscribeTracks, uploadAudioAndCreateTrack } from '../../web/backend/supabase'
 
 export const AppShell: React.FC = () => {
 	const library = useLibrary()
@@ -48,6 +48,7 @@ export const AppShell: React.FC = () => {
 	return (
 		<div className="app-shell">
 			<header className="topbar">
+				<img src="/logo.jpg" alt="Melorhy" className="logo" />
 				<h1 className="brand">Melorhy</h1>
 				<input
 					className="search"
@@ -106,6 +107,8 @@ export const AppShell: React.FC = () => {
 					</ul>
 					<h2>Add Music</h2>
 					<AddMusicForm />
+					<h2>Upload to Cloud</h2>
+					<CloudUploadForm />
 				</aside>
 			</main>
 
@@ -258,6 +261,56 @@ const AddMusicForm: React.FC = () => {
 					})}
 				</ul>
 			)}
+		</div>
+	)
+}
+
+const CloudUploadForm: React.FC = () => {
+	const client = getSupabaseClient()
+	const [file, setFile] = useState<File | null>(null)
+	const [title, setTitle] = useState('')
+	const [artist, setArtist] = useState('')
+	const [album, setAlbum] = useState('')
+	const [artworkUrl, setArtworkUrl] = useState('')
+	const [genres, setGenres] = useState('')
+	const [isBusy, setIsBusy] = useState(false)
+	const [msg, setMsg] = useState<string | null>(null)
+
+	if (!client) {
+		return <div className="muted">Configure Supabase env to enable cloud uploads.</div>
+	}
+
+	async function submit(): Promise<void> {
+		if (!file) return
+		setIsBusy(true)
+		setMsg(null)
+		try {
+			await uploadAudioAndCreateTrack(client, file, {
+				title: title || 'Untitled',
+				artist: artist || 'Unknown Artist',
+				album: album || 'Single',
+				artworkUrl: artworkUrl || 'https://picsum.photos/seed/cloud/300/300',
+				genres: genres.split(',').map((s) => s.trim()).filter(Boolean)
+			})
+			setFile(null); setTitle(''); setArtist(''); setAlbum(''); setArtworkUrl(''); setGenres('')
+			setMsg('Uploaded')
+		} catch (e) {
+			setMsg('Upload failed')
+		} finally {
+			setIsBusy(false)
+		}
+	}
+
+	return (
+		<div className="add-music">
+			<input type="file" accept="audio/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+			<input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+			<input placeholder="Artist" value={artist} onChange={(e) => setArtist(e.target.value)} />
+			<input placeholder="Album" value={album} onChange={(e) => setAlbum(e.target.value)} />
+			<input placeholder="Artwork URL (optional)" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} />
+			<input placeholder="Genres (comma-separated)" value={genres} onChange={(e) => setGenres(e.target.value)} />
+			<button onClick={submit} disabled={!file || isBusy}>{isBusy ? 'Uploading…' : 'Upload & Publish'}</button>
+			{msg && <div className="muted">{msg}</div>}
 		</div>
 	)
 }
