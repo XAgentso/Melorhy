@@ -281,7 +281,7 @@ const CloudUploadForm: React.FC = () => {
 	}
 
 	async function submit(): Promise<void> {
-		if (!file) return
+		if (!file || !client) return
 		setIsBusy(true)
 		setMsg(null)
 		try {
