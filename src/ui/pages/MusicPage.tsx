@@ -208,3 +208,4 @@ const PlayerBar: React.FC = () => {
 		</footer>
 	)
 }
+

@@ -17,9 +17,17 @@ export const UploadPage: React.FC = () => {
 	if (role !== 'artist') {
 		return (
 			<div className="upload-page">
+				<header className="topbar">
+					<img src="/logo.jpg" alt="Melorhy" className="logo" />
+					<h1 className="brand">Upload Music</h1>
+					<div className="user-info">
+						<span>User: {user}</span>
+					</div>
+				</header>
 				<div className="access-denied">
 					<h1>Access Denied</h1>
 					<p>Only artists can upload music.</p>
+					<p>You are logged in as a {role}.</p>
 				</div>
 			</div>
 		)
@@ -148,3 +156,4 @@ export const UploadPage: React.FC = () => {
 		</div>
 	)
 }
+

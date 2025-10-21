@@ -111,6 +111,16 @@ select { padding-right: 28px; }
 	margin: 8px 0;
 }
 
+.error-message {
+	color: #ef4444;
+	background: rgba(239, 68, 68, 0.1);
+	border: 1px solid rgba(239, 68, 68, 0.2);
+	padding: 8px 12px;
+	border-radius: 6px;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
 /* User Info */
 .user-info {
 	display: flex;
