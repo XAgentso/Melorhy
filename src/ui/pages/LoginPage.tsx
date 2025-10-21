@@ -1,88 +1,221 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../web/state/AuthContext'
+
+interface LoginFormData {
+	email: string
+	password: string
+	rememberMe: boolean
+}
+
 
 export const LoginPage: React.FC = () => {
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	const [username, setUsername] = useState('')
-	const [password, setPassword] = useState('')
-	const [role, setRole] = useState<'artist' | 'listener'>('listener')
+	const [formData, setFormData] = useState<LoginFormData>({
+		email: '',
+		password: '',
+		rememberMe: false
+	})
+	const [showPassword, setShowPassword] = useState(false)
+	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState('')
 
-	// Simple hardcoded credentials for demo
-	const validCredentials = {
-		artist: { username: 'artist', password: 'artist123' },
-		listener: { username: 'listener', password: 'listener123' }
+	// Form validation
+	const validateForm = (): boolean => {
+		if (!formData.email.trim()) {
+			setError('Email is required')
+			return false
+		}
+		if (!formData.password.trim()) {
+			setError('Password is required')
+			return false
+		}
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+			setError('Please enter a valid email address')
+			return false
+		}
+		return true
 	}
 
-	function handleLogin(e: React.FormEvent) {
+	// Handle form submission with secure authentication
+	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setError('')
 		
-		if (!username.trim() || !password.trim()) {
-			setError('Please enter both username and password')
-			return
-		}
+		if (!validateForm()) return
 
-		const credentials = validCredentials[role]
-		if (username === credentials.username && password === credentials.password) {
-			login(username.trim(), role)
+		setIsLoading(true)
+
+		try {
+			// Call backend authentication API
+			const response = await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					email: formData.email,
+					password: formData.password,
+					rememberMe: formData.rememberMe
+				})
+			})
+
+			const data = await response.json()
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Login failed')
+			}
+
+			// Store token securely
+			if (formData.rememberMe) {
+				localStorage.setItem('melorhy_token', data.token)
+			} else {
+				sessionStorage.setItem('melorhy_token', data.token)
+			}
+
+			// Update auth context
+			login(data.user.username, data.user.role)
+			
+			// Redirect to music page
 			navigate('/music')
-		} else {
-			setError('Invalid credentials')
+
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Login failed')
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
+	// Handle input changes
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value, type, checked } = e.target
+		setFormData(prev => ({
+			...prev,
+			[name]: type === 'checkbox' ? checked : value
+		}))
+		// Clear error when user starts typing
+		if (error) setError('')
+	}
+
 	return (
-		<div className="login-page">
-			<div className="login-container">
-				<img src="/logo.jpg" alt="Melorhy" className="logo-large" />
-				<h1>Welcome to Melorhy</h1>
-				<form onSubmit={handleLogin} className="login-form">
-					<input
-						type="text"
-						placeholder="Username"
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						required
-					/>
-					<input
-						type="password"
-						placeholder="Password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
-					/>
-					<div className="role-selector">
-						<label>
-							<input
-								type="radio"
-								name="role"
-								value="listener"
-								checked={role === 'listener'}
-								onChange={(e) => setRole(e.target.value as 'listener')}
-							/>
-							<span>Listener</span>
-						</label>
-						<label>
-							<input
-								type="radio"
-								name="role"
-								value="artist"
-								checked={role === 'artist'}
-								onChange={(e) => setRole(e.target.value as 'artist')}
-							/>
-							<span>Artist</span>
-						</label>
+		<div className="modern-login-page">
+			<div className="login-background">
+				<div className="login-container">
+					{/* Header */}
+					<div className="login-header">
+						<img src="/logo.jpg" alt="Melorhy" className="logo-large" />
+						<h1>Welcome to Melorhy</h1>
+						<p className="login-subtitle">Sign in to your account</p>
 					</div>
-					{error && <div className="error-message">{error}</div>}
-					<button type="submit">Login</button>
-				</form>
-				<div className="role-info">
-					<p><strong>Demo Credentials:</strong></p>
-					<p><strong>Artist:</strong> username: artist, password: artist123</p>
-					<p><strong>Listener:</strong> username: listener, password: listener123</p>
+
+					{/* Login Form */}
+					<form onSubmit={handleLogin} className="modern-login-form">
+						{/* Email Field */}
+						<div className="form-group">
+							<label htmlFor="email" className="form-label">Email</label>
+							<div className="input-wrapper">
+								<input
+									id="email"
+									name="email"
+									type="email"
+									placeholder="Enter your email"
+									value={formData.email}
+									onChange={handleInputChange}
+									className="form-input"
+									required
+									autoComplete="email"
+								/>
+								<div className="input-icon">📧</div>
+							</div>
+						</div>
+
+						{/* Password Field */}
+						<div className="form-group">
+							<label htmlFor="password" className="form-label">Password</label>
+							<div className="input-wrapper">
+								<input
+									id="password"
+									name="password"
+									type={showPassword ? 'text' : 'password'}
+									placeholder="Enter your password"
+									value={formData.password}
+									onChange={handleInputChange}
+									className="form-input"
+									required
+									autoComplete="current-password"
+								/>
+								<button
+									type="button"
+									className="password-toggle"
+									onClick={() => setShowPassword(!showPassword)}
+									aria-label={showPassword ? 'Hide password' : 'Show password'}
+								>
+									{showPassword ? '👁️' : '👁️‍🗨️'}
+								</button>
+							</div>
+						</div>
+
+						{/* Remember Me & Forgot Password */}
+						<div className="form-options">
+							<label className="checkbox-wrapper">
+								<input
+									name="rememberMe"
+									type="checkbox"
+									checked={formData.rememberMe}
+									onChange={handleInputChange}
+									className="checkbox-input"
+								/>
+								<span className="checkbox-label">Remember me</span>
+							</label>
+							<Link to="/forgot-password" className="forgot-link">
+								Forgot password?
+							</Link>
+						</div>
+
+						{/* Error Message */}
+						{error && (
+							<div className="error-message">
+								<span className="error-icon">⚠️</span>
+								{error}
+							</div>
+						)}
+
+						{/* Submit Button */}
+						<button 
+							type="submit" 
+							className="login-button"
+							disabled={isLoading}
+						>
+							{isLoading ? (
+								<>
+									<span className="spinner"></span>
+									Signing in...
+								</>
+							) : (
+								'Sign in'
+							)}
+						</button>
+					</form>
+
+					{/* Sign Up Link */}
+					<div className="signup-section">
+						<p>Don't have an account?</p>
+						<Link to="/register" className="signup-link">
+							Sign up for Melorhy
+						</Link>
+					</div>
+
+					{/* Demo Credentials */}
+					<div className="demo-credentials">
+						<p><strong>Demo Accounts:</strong></p>
+						<div className="demo-account">
+							<p><strong>Artist:</strong> artist@melorhy.com / Artist123!</p>
+						</div>
+						<div className="demo-account">
+							<p><strong>Listener:</strong> listener@melorhy.com / Listener123!</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

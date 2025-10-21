@@ -5,6 +5,7 @@ import { LibraryProvider } from '../web/state/LibraryContext'
 import { PlayerProvider } from '../web/state/PlayerContext'
 import { PlaylistProvider } from '../web/state/PlaylistContext'
 import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
 import { MusicPage } from './pages/MusicPage'
 import { UploadPage } from './pages/UploadPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -18,6 +19,7 @@ export const App: React.FC = () => {
 						<Router>
 							<Routes>
 								<Route path="/login" element={<LoginPage />} />
+								<Route path="/register" element={<RegisterPage />} />
 								<Route path="/music" element={
 									<ProtectedRoute>
 										<MusicPage />
