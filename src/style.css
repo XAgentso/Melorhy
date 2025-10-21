@@ -56,7 +56,7 @@ select { padding-right: 28px; }
 /* Modern Login Page */
 .modern-login-page {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: linear-gradient(135deg, #2a2a2a 0%, #404040 50%, #1a1a1a 100%);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -69,12 +69,12 @@ select { padding-right: 28px; }
 }
 
 .login-container {
-	background: rgba(255, 255, 255, 0.95);
+	background: rgba(42, 42, 42, 0.95);
 	backdrop-filter: blur(20px);
 	border-radius: 24px;
 	padding: 40px;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(64, 64, 64, 0.3);
 }
 
 .login-header {
@@ -93,7 +93,7 @@ select { padding-right: 28px; }
 .login-header h1 {
 	font-size: 28px;
 	font-weight: 700;
-	color: #1a1a1a;
+	color: var(--text);
 	margin: 0 0 8px 0;
 }
 
@@ -346,6 +346,23 @@ select { padding-right: 28px; }
 	margin-left: auto;
 }
 
+.upload-nav-btn {
+	background: linear-gradient(135deg, #555555 0%, #777777 100%);
+	color: white;
+	border: none;
+	border-radius: 8px;
+	padding: 8px 16px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.upload-nav-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
+}
+
 .role-badge {
 	background: var(--accent);
 	color: var(--bg);
@@ -360,20 +377,29 @@ select { padding-right: 28px; }
 .upload-page {
 	min-height: 100vh;
 	background: var(--bg);
+	color: var(--text);
 }
 
 .upload-content {
 	padding: 24px;
-	max-width: 600px;
+	max-width: 800px;
 	margin: 0 auto;
 }
 
 .upload-form-container {
-	background: var(--panel);
+	background: linear-gradient(180deg, var(--panel-2), var(--panel));
 	border: 1px solid var(--border);
 	border-radius: 16px;
-	padding: 24px;
+	padding: 32px;
 	box-shadow: var(--shadow);
+}
+
+.upload-form-container h2 {
+	color: var(--text);
+	font-size: 24px;
+	font-weight: 600;
+	margin: 0 0 24px 0;
+	text-align: center;
 }
 
 .upload-form {
@@ -391,44 +417,206 @@ select { padding-right: 28px; }
 .form-group label {
 	font-weight: 600;
 	color: var(--text);
+	font-size: 14px;
+}
+
+.upload-form input[type="text"],
+.upload-form input[type="url"],
+.upload-form input[type="file"] {
+	background: var(--panel);
+	border: 2px solid var(--border);
+	border-radius: 12px;
+	padding: 12px 16px;
+	color: var(--text);
+	font-size: 16px;
+	transition: all 0.2s ease;
+}
+
+.upload-form input[type="text"]:focus,
+.upload-form input[type="url"]:focus {
+	outline: none;
+	border-color: var(--accent);
+	background: var(--panel-2);
+	box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
+}
+
+.upload-form input[type="file"] {
+	padding: 8px;
+	cursor: pointer;
+}
+
+.upload-form input[type="file"]:hover {
+	border-color: var(--accent);
 }
 
 .upload-btn {
-	background: var(--accent);
-	color: var(--bg);
+	background: linear-gradient(135deg, #555555 0%, #777777 100%);
+	color: white;
 	border: none;
-	padding: 12px 24px;
-	border-radius: 10px;
+	border-radius: 12px;
+	padding: 16px 24px;
+	font-size: 16px;
 	font-weight: 600;
 	cursor: pointer;
-	transition: background 0.2s ease;
+	transition: all 0.2s ease;
+	margin-top: 8px;
 }
 
 .upload-btn:hover:not(:disabled) {
-	background: var(--accent-2);
+	transform: translateY(-1px);
+	box-shadow: 0 8px 16px rgba(85, 85, 85, 0.3);
 }
 
 .upload-btn:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
+	transform: none;
 }
 
 .message {
-	padding: 12px;
+	padding: 12px 16px;
 	border-radius: 8px;
+	font-size: 14px;
 	font-weight: 500;
+	text-align: center;
+	margin-top: 16px;
 }
 
 .message.success {
 	background: rgba(34, 197, 94, 0.1);
+	border: 1px solid rgba(34, 197, 94, 0.3);
 	color: #22c55e;
-	border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .message.error {
 	background: rgba(239, 68, 68, 0.1);
+	border: 1px solid rgba(239, 68, 68, 0.3);
 	color: #ef4444;
-	border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.access-denied {
+	text-align: center;
+	padding: 60px 24px;
+	background: linear-gradient(180deg, var(--panel-2), var(--panel));
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	margin: 24px;
+	box-shadow: var(--shadow);
+}
+
+.access-denied h1 {
+	color: var(--text);
+	font-size: 32px;
+	font-weight: 700;
+	margin: 0 0 16px 0;
+}
+
+.access-denied p {
+	color: var(--muted);
+	font-size: 16px;
+	margin: 8px 0;
+}
+
+.config-error {
+	text-align: center;
+	padding: 60px 24px;
+	background: linear-gradient(180deg, var(--panel-2), var(--panel));
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	margin: 24px;
+	box-shadow: var(--shadow);
+}
+
+.config-error h1 {
+	color: var(--text);
+	font-size: 32px;
+	font-weight: 700;
+	margin: 0 0 16px 0;
+}
+
+.config-error p {
+	color: var(--muted);
+	font-size: 16px;
+	margin: 8px 0;
+}
+
+/* Music Page Styles */
+.music-page {
+	min-height: 100vh;
+	background: var(--bg);
+	color: var(--text);
+}
+
+.playlist-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.playlist-list .create {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.playlist-list .create input {
+	flex: 1;
+	background: var(--panel);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 8px 12px;
+	color: var(--text);
+}
+
+.playlist-list .create button {
+	background: var(--accent);
+	color: var(--bg);
+	border: none;
+	border-radius: 8px;
+	padding: 8px 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.playlist-list .create button:hover {
+	background: var(--accent-2);
+}
+
+.playlist {
+	background: var(--panel);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.playlist .row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.playlist .row.actions {
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.playlist .row.actions button {
+	background: var(--panel-2);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 4px 8px;
+	font-size: 12px;
+	color: var(--text);
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.playlist .row.actions button:hover {
+	background: var(--accent);
+	color: var(--bg);
 }
 
 .access-denied, .config-error {

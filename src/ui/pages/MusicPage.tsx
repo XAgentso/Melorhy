@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLibrary } from '../../web/state/LibraryContext'
 import { usePlayer } from '../../web/state/PlayerContext'
 import { usePlaylists } from '../../web/state/PlaylistContext'
 import { useAuth } from '../../web/state/AuthContext'
 import type { TrackId } from '../../web/state/types'
-import { getSupabaseClient, fetchRemoteTracks, subscribeTracks } from '../../web/backend/supabase'
+import { fetchTracks, subscribeToTracks } from '../../lib/supabaseService'
 
 export const MusicPage: React.FC = () => {
+	const navigate = useNavigate()
 	const library = useLibrary()
 	const player = usePlayer()
 	const playlists = usePlaylists()
@@ -15,21 +17,32 @@ export const MusicPage: React.FC = () => {
 
 	useEffect(() => {
 		library.initialize()
-		const client = getSupabaseClient()
-		if (!client) return
-		let subscription: ReturnType<typeof subscribeTracks> | null = null
-		fetchRemoteTracks(client)
-			.then((remote) => {
-				for (const t of remote) library.addTrack(t)
-			})
-			.catch(() => {})
-		subscription = subscribeTracks(
-			client,
-			(t) => library.addTrack(t),
-			(id) => library.removeTrack(id)
+		
+		// Fetch tracks from Supabase
+		fetchTracks().then((tracks) => {
+			tracks.forEach(track => library.addTrack(track))
+		}).catch((error) => {
+			console.log('Failed to fetch tracks from Supabase:', error)
+		})
+
+		// Subscribe to real-time updates
+		const subscription = subscribeToTracks(
+			(track) => {
+				console.log('New track added:', track)
+				library.addTrack(track)
+			},
+			(track) => {
+				console.log('Track updated:', track)
+				library.addTrack(track) // This will update the existing track
+			},
+			(trackId) => {
+				console.log('Track deleted:', trackId)
+				library.removeTrack(trackId)
+			}
 		)
+
 		return () => {
-			if (subscription) client.removeChannel(subscription)
+			subscription.unsubscribe()
 		}
 	}, [])
 
@@ -55,6 +68,14 @@ export const MusicPage: React.FC = () => {
 				<div className="user-info">
 					<span>Welcome, {user}</span>
 					<span className="role-badge">{role}</span>
+					{role === 'artist' && (
+						<button 
+							className="upload-nav-btn"
+							onClick={() => navigate('/upload')}
+						>
+							Upload Music
+						</button>
+					)}
 				</div>
 				<input
 					className="search"

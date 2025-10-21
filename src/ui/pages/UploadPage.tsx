@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../web/state/AuthContext'
-import { getSupabaseClient, uploadAudioAndCreateTrack } from '../../web/backend/supabase'
+import { useLibrary } from '../../web/state/LibraryContext'
+import { addTrack } from '../../lib/supabaseService'
 
 export const UploadPage: React.FC = () => {
 	const { user, role } = useAuth()
-	const client = getSupabaseClient()
+	const library = useLibrary()
 	const [file, setFile] = useState<File | null>(null)
 	const [title, setTitle] = useState('')
 	const [artist, setArtist] = useState('')
@@ -33,31 +34,47 @@ export const UploadPage: React.FC = () => {
 		)
 	}
 
-	if (!client) {
-		return (
-			<div className="upload-page">
-				<div className="config-error">
-					<h1>Configuration Required</h1>
-					<p>Supabase environment variables not configured.</p>
-				</div>
-			</div>
-		)
-	}
-
 	async function submit(): Promise<void> {
-		if (!file || !client) return
+		if (!file) return
 		setIsBusy(true)
 		setMsg(null)
+		
 		try {
-			await uploadAudioAndCreateTrack(client, file, {
+			// Create track object
+			const track = {
 				title: title || 'Untitled',
 				artist: artist || 'Unknown Artist',
 				album: album || 'Single',
-				artworkUrl: artworkUrl || 'https://picsum.photos/seed/cloud/300/300',
+				artworkUrl: artworkUrl || 'https://picsum.photos/seed/' + Date.now() + '/300/300',
+				previewUrl: URL.createObjectURL(file), // Local URL for immediate playback
 				genres: genres.split(',').map((s) => s.trim()).filter(Boolean)
-			})
-			setFile(null); setTitle(''); setArtist(''); setAlbum(''); setArtworkUrl(''); setGenres('')
-			setMsg('Upload successful! Track is now live.')
+			}
+
+			// Try to upload to Supabase first
+			try {
+				const trackId = await addTrack(track, user || 'demo_artist')
+				if (trackId) {
+					// Add to local library with Supabase ID
+					library.addTrack({ ...track, id: trackId })
+					setMsg('Upload successful! Track is now live and synced to the cloud.')
+				} else {
+					throw new Error('Failed to upload to cloud')
+				}
+			} catch (supabaseError) {
+				console.log('Supabase upload failed, using local storage:', supabaseError)
+				// Fallback to local storage
+				const trackId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+				library.addTrack({ ...track, id: trackId })
+				setMsg('Upload successful! Track saved locally (cloud sync unavailable).')
+			}
+			
+			// Reset form
+			setFile(null)
+			setTitle('')
+			setArtist('')
+			setAlbum('')
+			setArtworkUrl('')
+			setGenres('')
 		} catch (e) {
 			setMsg('Upload failed. Please try again.')
 		} finally {
