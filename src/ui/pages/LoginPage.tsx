@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
 
 		try {
 			// Call backend authentication API
-			const response = await fetch('/api/auth/login', {
+			const response = await fetch('http://localhost:5000/api/auth/login', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
