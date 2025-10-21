@@ -39,4 +39,12 @@ export interface PlaylistsState {
 	playlistOrder: PlaylistId[]
 }
 
+export type UserRole = 'artist' | 'listener' | null
+
+export interface AuthState {
+	user: string | null
+	role: UserRole
+	isAuthenticated: boolean
+}
+
 
